@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Teddy Vending Machine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background: #e3e3e3;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .machine-card {
+            background: #248a8a;
+            border-radius: 20px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
+            max-width: 900px;
+            width: 100%;
+            padding: 18px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .glass-box {
+            background: linear-gradient(135deg, #ffffff40, #00000020);
+            backdrop-filter: blur(3px);
+            border-radius: 20px;
+            box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-panel {
+            background: #2a2a2a;
+            border-radius: 18px;
+            box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.5);
+            color: #ddd;
+            font-size: 18px;
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+            font-weight: bold;
+            width: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .teddy-img {
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            object-fit: cover;
+            height: 190px;
+            width: 100%;
+        }
+
+        .state-bar {
+            border-radius: 12px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            background: #fff;
+            margin-top: 18px;
+            padding: 10px 14px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 18px;
+        }
+
+        .teddy-grid {
+            flex: 1;
+        }
+
+        .stock-badge {
+            position: absolute;
+            left: 8px;
+            top: 8px;
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+            }
+
+            .machine-card {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 14px;
+            }
+
+            .side-panel {
+                width: 100%;
+                height: 60px;
+                writing-mode: horizontal-tb;
+                text-orientation: mixed;
+                font-size: 18px;
+                order: 0;
+                letter-spacing: 5px;
+            }
+
+            .glass-box {
+                order: 1;
+            }
+
+            .teddy-img {
+                height: 110px;
+            }
+
+            .state-bar {
+                font-size: 16px;
+            }
+        }
+
+        /* small cart badge */
+        #cartCount {
+            position: absolute;
+            right: 20px;
+            top: 12px;
+            background: #ffc107;
+            color: #000;
+            padding: 6px 10px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+/* small cart badge */
+.stock-badge {
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    padding: 4px 6px;
+    border-radius: 50%; /* دائري */
+    font-size: 11px; /* أصغر */
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    min-width: 24px;
+    min-height: 24px;
+    line-height: 1.4;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0,0,0,0.5); /* شفاف */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+        /* checkout modal list */
+        .cart-item { display: flex; align-items: center; gap: 12px; padding:8px 0; border-bottom:1px solid #eee }
+        .cart-item img{ width:60px; height:50px; object-fit:cover; border-radius:8px }
+    </style>
+</head>
+
+<body>
+
+    <div class="machine-card">
+        <div class="glass-box">
+            <h2 class="text-center text-white">Select Your Teddy 🧸</h2>
+
+            <div class="position-relative">
+                <div id="cartCount" style="display:none">0</div>
+            </div>
+
+            <div class="teddy-grid">
+                <div class="row row-cols-3 row-cols-sm-4 g-3">
+
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(1)">
+                            <span class="stock-badge" id="stock-1"></span>
+                            <img src="./assets/img/s1.png" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(2)">
+                            <span class="stock-badge" id="stock-2"></span>
+                            <img src="./assets/img/s2.png" class="teddy-img">
+                        </button>
+                    </div>
+
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(3)">
+                            <span class="stock-badge" id="stock-3"></span>
+                            <img src="./assets/img/s3.png" class="teddy-img">
+                        </button>
+                    </div>
+
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(4)">
+                            <span class="stock-badge" id="stock-4"></span>
+                            <img src="./assets/img/s4.png" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(5)">
+                            <span class="stock-badge" id="stock-5"></span>
+                            <img src="./assets/img/m1.png" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(6)">
+                            <span class="stock-badge" id="stock-6"></span>
+                            <img src="./assets/img/m2.png" class="teddy-img">
+                        </button>
+                    </div>
+
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(7)">
+                            <span class="stock-badge" id="stock-7"></span>
+                            <img src="./assets/img/m3.png" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(8)">
+                            <span class="stock-badge" id="stock-8"></span>
+                            <img src="./assets/img/m5.png" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(9)">
+                            <span class="stock-badge" id="stock-9"></span>
+                            <img src="./assets/img/l1.png" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(10)">
+                            <span class="stock-badge" id="stock-10"></span>
+                            <img src="./assets/img/l2.jfif" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(11)">
+                            <span class="stock-badge" id="stock-11"></span>
+                            <img src="./assets/img/l3.png" class="teddy-img">
+                        </button>
+                    </div>
+                    <div class="col">
+                        <button class="btn p-0 w-100 position-relative" onclick="showInfo(12)">
+                            <span class="stock-badge" id="stock-12"></span>
+                            <img src="./assets/img/l4.png" class="teddy-img">
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mt-3">
+                <button id="checkoutBtn" class="btn btn-warning w-100" style="display:none;" onclick="openCheckout()">
+                    Checkout 🧺
+                </button>
+                <button id="clearCartBtn" class="btn btn-outline-light" style="display:none;" onclick="clearCart()">
+                    Clear
+                </button>
+            </div>
+
+            <div class="state-bar" id="main-path">
+                Scan → Welcome → Product
+            </div>
+        </div>
+
+        <div class="side-panel">
+            VENDING MACHINE
+        </div>
+    </div>
+
+    <!-- Details Modal (shows product details and Order button) -->
+    <div class="modal fade" id="detailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-body">
+                    <img id="mImg" src="" class="img-fluid mb-3" style="max-height:200px; border-radius:12px; object-fit:cover;">
+                    <h5 id="mSize"></h5>
+                    <h5 id="mPrice"></h5>
+                    <h6 id="mStockInfo" class="text-muted"></h6>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <button class="btn btn-success w-50 me-2" onclick="orderThis()">Order</button>
+                        <button class="btn btn-danger w-50 ms-2" data-bs-dismiss="modal" onclick="closeModalPath()">Cancel</button>
+                    </div>
+
+                    <div class="state-bar mt-3" id="details-path">
+                        Scan → Welcome → Product → Details
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal (choosing payment method) -->
+    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-body">
+                    <h4>Select Payment Method</h4>
+
+                    <div class="d-flex justify-content-around align-items-center mt-3">
+                        <img src="./assets/buy/visa.png" alt="Visa" style="width:80px; height:50px; object-fit:contain; cursor:pointer;" onclick="selectPayment('Visa')">
+                        <img src="./assets/buy/reflectlogo1.png" alt="Reflect" style="width:80px; height:50px; object-fit:contain; cursor:pointer;" onclick="selectPayment('Reflect')">
+                        <img src="./assets/buy/palpay.png" alt="PalPay" style="width:80px; height:50px; object-fit:contain; cursor:pointer;" onclick="selectPayment('PalPay')">
+                    </div>
+
+                    <div class="state-bar mt-3" id="payment-path">
+                        Scan → Welcome → Product → Details → Buy
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content text-center">
+                <div class="modal-body">
+                    <h4 id="confirmTitle">Are you sure?</h4>
+                    <p id="confirmBody"></p>
+
+                    <div class="d-flex justify-content-between mt-3">
+                        <button class="btn btn-success w-50 me-2" onclick="confirmYes()">Yes</button>
+                        <button class="btn btn-danger w-50 ms-2" onclick="backToPayment()">No</button>
+                    </div>
+
+                    <div class="state-bar mt-3" id="confirm-path">
+                        Scan → Welcome → Product → Details → Buy → Payment Options
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Modal (list cart items prior to payment) -->
+    <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Your Order</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="setMainPath('Scan → Welcome → Product')"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="cartList"></div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <strong>Total: $<span id="cartTotal">0</span></strong>
+                        </div>
+                        <div>
+                            <button class="btn btn-secondary me-2" onclick="setMainPath('Scan → Welcome → Product → Checkout(Cancel) → Product')" data-bs-dismiss="modal">Continue Shopping</button>
+                            <button class="btn btn-primary" onclick="proceedToPayment()">Continue to Payment</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // ===== Data =====
+        const teddyData = {
+            1: { img: "./assets/img/s1.png", size: "Small", price: "$5", stock: 5, name: "Teddy S1" },
+            2: { img: "./assets/img/s2.png", size: "Small", price: "$5", stock: 5, name: "Teddy S2" },
+            3: { img: "./assets/img/s3.png", size: "Small", price: "$6", stock: 5, name: "Teddy S3" },
+            4: { img: "./assets/img/s4.png", size: "Small", price: "$6", stock: 5, name: "Teddy S4" },
+            5: { img: "./assets/img/m1.png", size: "Medium", price: "$8", stock: 5, name: "Teddy M1" },
+            6: { img: "./assets/img/m2.png", size: "Medium", price: "$9", stock: 5, name: "Teddy M2" },
+            7: { img: "./assets/img/m3.png", size: "Medium", price: "$10", stock: 5, name: "Teddy M3" },
+            8: { img: "./assets/img/m5.png", size: "Medium", price: "$10", stock: 5, name: "Teddy M5" },
+            9: { img: "./assets/img/l1.png", size: "Large", price: "$12", stock: 5, name: "Teddy L1" },
+            10: { img: "./assets/img/l2.jfif", size: "Large", price: "$13", stock: 5, name: "Teddy L2" },
+            11: { img: "./assets/img/l3.png", size: "Large", price: "$13", stock: 5, name: "Teddy L3" },
+            12: { img: "./assets/img/l4.png", size: "Large", price: "$14", stock: 5, name: "Teddy L4" }
+        };
+
+        // Cart and selection
+        let selectedTeddyId = null;
+        let cart = [];
+        let selectedPaymentMethod = null;
+
+        // Simulated user balances per payment method
+        const userBalance = {
+            Visa: 50,
+            Reflect: 20,
+            PalPay: 30
+        };
+
+        // Bootstrap modals
+        const detailsModal = new bootstrap.Modal(document.getElementById('detailsModal'));
+        const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        const confirmModal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        const checkoutModal = new bootstrap.Modal(document.getElementById('checkoutModal'));
+
+        // ===== UI helpers =====
+        function setMainPath(text) { document.getElementById("main-path").innerText = text; }
+        function setDetailsPath(text) { document.getElementById("details-path").innerText = text; }
+        function setPaymentPath(text) { document.getElementById("payment-path").innerText = text; }
+        function setConfirmPath(text) { document.getElementById("confirm-path").innerText = text; }
+
+        function formatPrice(priceStr) { return parseInt(priceStr.replace('$','')) }
+
+function updateStockBadges() {
+    for (let id=1; id<=12; id++){
+        const el = document.getElementById('stock-'+id);
+        if (!el) continue;
+        const st = teddyData[id].stock;
+        if(st <= 0) {
+            el.innerText = '0';
+            el.style.background = 'rgba(200,0,0,0.8)'; // أحمر
+        } else if (st <= 2) {
+            el.innerText = st;
+            el.style.background = 'rgba(255,165,0,0.8)'; // أصفر برتقالي
+        } else {
+            el.innerText = st;
+            el.style.background = 'rgba(0,128,0,0.7)'; // أخضر
+        }
+    }
+}
+
+        function updateCartUI() {
+            const countEl = document.getElementById('cartCount');
+            countEl.innerText = cart.length;
+            countEl.style.display = cart.length>0 ? 'block' : 'none';
+            document.getElementById('checkoutBtn').style.display = cart.length>0 ? 'block' : 'none';
+            document.getElementById('clearCartBtn').style.display = cart.length>0 ? 'inline-block' : 'none';
+        }
+
+        // ===== Show details when clicking product (as you requested) =====
+        function showInfo(id) {
+            const data = teddyData[id];
+            selectedTeddyId = id;
+
+            document.getElementById("mImg").src = data.img;
+            document.getElementById("mSize").innerText = "Size: " + data.size;
+            document.getElementById("mPrice").innerText = "Price: " + data.price;
+            document.getElementById("mStockInfo").innerText = data.stock>0 ? "Available" : "Sold out";
+
+            setDetailsPath("Scan → Welcome → Product → Details");
+            detailsModal.show();
+        }
+
+        function closeModalPath() {
+            detailsModal.hide();
+            setMainPath("Scan → Welcome → Product");
+        }
+
+        // ===== Ordering (add to cart) =====
+        function orderThis() {
+            if (selectedTeddyId === null) {
+                alert('Please select a teddy first.');
+                return;
+            }
+            const data = teddyData[selectedTeddyId];
+            if (data.stock <= 0) {
+                alert('Sorry, this teddy is sold out.');
+                return;
+            }
+
+            // add to cart as an item object
+            cart.push({ id: selectedTeddyId, name: data.name, price: data.price, img: data.img });
+
+            // optional: decrement stock immediately or after payment; here we keep stock until confirm to allow cancel.
+            // close details and return to grid
+            detailsModal.hide();
+
+            setMainPath('Scan → Welcome → Product → Details(Order) → Product');
+            updateCartUI();
+            alert('Added to cart: ' + data.name);
+        }
+
+        // ===== Checkout flow =====
+        function openCheckout() {
+            renderCartList();
+            setMainPath('Scan → Welcome → Product → Checkout');
+            checkoutModal.show();
+        }
+
+        function renderCartList() {
+            const listEl = document.getElementById('cartList');
+            listEl.innerHTML = '';
+            if (cart.length === 0) {
+                listEl.innerHTML = '<p>Your cart is empty.</p>';
+                document.getElementById('cartTotal').innerText = '0';
+                return;
+            }
+
+            cart.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <img src="${item.img}" alt="${item.name}">
+                    <div style="flex:1; text-align:left">
+                        <strong>${item.name}</strong>
+                        <div>Price: ${item.price}</div>
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="removeFromCart(${index})">Remove</button>
+                    </div>
+                `;
+                listEl.appendChild(div);
+            });
+
+            document.getElementById('cartTotal').innerText = getCartTotal();
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index,1);
+            renderCartList();
+            updateCartUI();
+        }
+
+        function clearCart() {
+            if (!confirm('Clear all items from cart?')) return;
+            cart = [];
+            updateCartUI();
+            alert('Cart cleared');
+        }
+
+        function getCartTotal() {
+            let total = 0;
+            cart.forEach(item => { total += formatPrice(item.price); });
+            return total;
+        }
+
+        // ===== Payment =====
+        function proceedToPayment() {
+            if (cart.length === 0) {
+                alert('Your cart is empty.');
+                return;
+            }
+            checkoutModal.hide();
+            setPaymentPath('Scan → Welcome → Product → Details → Buy');
+            paymentModal.show();
+        }
+
+        function selectPayment(method) {
+            selectedPaymentMethod = method;
+            // verify balance before showing confirm
+            const total = getCartTotal();
+            if (userBalance[method] < total) {
+                alert(`رصيدك في ${method} غير كافي.
+Total: $${total} | Balance: $${userBalance[method]}`);
+                // stay in payment modal so user can choose another method
+                paymentModal.show();
+                return;
+            }
+
+            paymentModal.hide();
+            setConfirmPath(`Scan → Welcome → Product → Details → Buy → (${method}) → Payment Options`);
+            document.getElementById('confirmBody').innerText = `You are about to pay $${total} using ${method}. Your balance: $${userBalance[method]}. Continue?`;
+            confirmModal.show();
+        }
+
+        function backToPayment() {
+            confirmModal.hide();
+            setPaymentPath('Scan → Welcome → Product → Details → Buy → Payment Options → Back to Buy');
+            paymentModal.show();
+        }
+
+        function confirmYes() {
+            if (cart.length === 0) {
+                alert('Error: no items in cart.');
+                return;
+            }
+            if (!selectedPaymentMethod) {
+                alert('No payment method selected.');
+                return;
+            }
+
+            const total = getCartTotal();
+
+            // Final check of stock before deducting
+            for (const item of cart) {
+                const id = item.id;
+                if (teddyData[id].stock <= 0) {
+                    alert('Sorry, one of the items in your cart is sold out: ' + teddyData[id].name);
+                    confirmModal.hide();
+                    setMainPath('Scan → Welcome → Product');
+                    return;
+                }
+            }
+
+            // Deduct balance
+            userBalance[selectedPaymentMethod] -= total;
+
+            // Deduct stock
+            for (const item of cart) {
+                teddyData[item.id].stock -= 1;
+            }
+
+            // Clear cart and update UI
+            cart = [];
+            updateCartUI();
+            updateStockBadges();
+
+            confirmModal.hide();
+            alert('Payment Confirmed! ✅ Teddy(s) Dispensed.Total Paid: $' + total + 'Remaining ' + selectedPaymentMethod + ' balance: $' + userBalance[selectedPaymentMethod]);
+
+            setMainPath('Scan → Welcome → Product → Details → Buy → Payment Options → Success');
+
+            // reset selection
+            selectedPaymentMethod = null;
+        }
+
+        // ===== startup =====
+        window.addEventListener('load', () => {
+            setMainPath('Scan → Welcome → Product');
+            updateStockBadges();
+            updateCartUI();
+        });
+
+    </script>
+
+</body>
+
+</html>
